@@ -15,7 +15,7 @@ namespace consolJson
             SqlConnection conn = null;
             try
             {
-                using ( conn = new SqlConnection(Utility.GetConfig("conn")))
+                using (conn = new SqlConnection(Utility.GetConfig("conn")))
                 {
                     SqlCommand com1 = new SqlCommand(Utility.GetConfig("com1"));
                     com1.CommandType = CommandType.Text;
@@ -59,7 +59,8 @@ namespace consolJson
                                             update.Parameters.Add(pid);
                                             update.Parameters.Add(deliveryValue);
                                             update.ExecuteNonQuery();
-                                        }catch(Exception ex)
+                                        }
+                                        catch (Exception ex)
                                         {
                                             //do not jump out even have exception data, continue to update next record;
                                             Utility.Log(LogTarget.File, String.Format("ID:{0}, Ex:{1}", id, ex.Message));
@@ -80,7 +81,8 @@ namespace consolJson
                         conn.Close();
                     }
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Utility.Log(LogTarget.File, String.Format("ID:{0}, Ex:{1}", id, e.Message));
             }

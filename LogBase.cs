@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace consolJson
@@ -33,9 +34,31 @@ namespace consolJson
         }
     }
 
+
+    public class EventLogger : LogBase
+    {
+        /// <summary>
+        /// Add Event log
+        /// </summary>
+        /// <param name="message"></param>
+        public override void Log(string message)
+        {
+            lock (lockObj)
+            {
+                EventLog m_EventLog = new EventLog("");
+                m_EventLog.Source = "IDGEventLog";
+                m_EventLog.WriteEntry(message);
+            }
+        }
+    }
+
     public class DBLogger : LogBase
     {
         string connectionString = string.Empty;
+        /// <summary>
+        /// TBD: Add Log to Database
+        /// </summary>
+        /// <param name="message"></param>
         public override void Log(string message)
         {
             lock (lockObj)

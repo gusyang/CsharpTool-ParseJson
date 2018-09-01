@@ -6,7 +6,6 @@
 
 namespace consolJson
 {
-    using System;
     using System.Collections.Generic;
 
     using System.Globalization;
@@ -24,12 +23,12 @@ namespace consolJson
 
     public partial class Dv
     {
-        public static List<Dv> FromJson(string json) => JsonConvert.DeserializeObject<List<Dv>>(json, consolJson.Converter.Settings);
+        public static List<Dv> FromJson(string json) => JsonConvert.DeserializeObject<List<Dv>>(json, Converter.Settings);
     }
 
     public static class Serialize
     {
-        public static string ToJson(this List<Dv> self) => JsonConvert.SerializeObject(self, consolJson.Converter.Settings);
+        public static string ToJson(this List<Dv> self) => JsonConvert.SerializeObject(self, Converter.Settings);
     }
 
     internal static class Converter
