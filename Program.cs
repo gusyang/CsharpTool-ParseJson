@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -12,66 +11,78 @@ namespace consolJson
     {
         static void Main(string[] args)
         {
-            using (SqlConnection conn = new SqlConnection(ConfigurationManager.AppSettings["conn"]))
+            int id = 0;
+            SqlConnection conn = null;
+            try
             {
-                SqlCommand com1 = new SqlCommand(ConfigurationManager.AppSettings["com1"]);
-                com1.CommandType = CommandType.Text;
-                com1.Connection = conn;
-                conn.Open();
-                SqlDataReader reader = com1.ExecuteReader();
-                if (reader.HasRows)
+                using ( conn = new SqlConnection(Utility.GetConfig("conn")))
                 {
-                    while (reader.Read())
+                    SqlCommand com1 = new SqlCommand(Utility.GetConfig("com1"));
+                    com1.CommandType = CommandType.Text;
+                    com1.Connection = conn;
+                    conn.Open();
+                    SqlDataReader reader = com1.ExecuteReader();
+                    if (reader.HasRows)
                     {
-                        int id = reader.GetInt32(0);
-                        string delivery = "";
-                        string json = reader.GetString(1);
-                        List<Dv> dvs = Dv.FromJson(json);
-                        if (dvs.Count > 0)
+                        while (reader.Read())
                         {
-                            foreach(Dv dv in dvs)
+                            id = reader.GetInt32(0);
+                            string delivery = "";
+                            string json = reader.GetString(1);
+                            List<Dv> dvs = Dv.FromJson(json);
+                            if (dvs.Count > 0)
                             {
-                                if (dv.Name.Equals("#DV_DeliveryDate#", StringComparison.CurrentCultureIgnoreCase))
-                                    delivery = dv.Value.Substring(15, dv.Value.Length - 15);
-                                DateTime tmp;
-                                if (DateTime.TryParse(delivery, out tmp))
+                                foreach (Dv dv in dvs)
                                 {
-                                    SqlCommand update = new SqlCommand(ConfigurationManager.AppSettings["com2"]);
-                                    update.CommandType = CommandType.Text;
-                                    update.Connection = conn;
-                                    SqlParameter pid = new SqlParameter();
-                                    pid.ParameterName = "@ID";
-                                    pid.SqlDbType = SqlDbType.Int;
-                                    pid.Direction = ParameterDirection.Input;
-                                    pid.Value = id;
+                                    if (dv.Name.Equals("#DV_DeliveryDate#", StringComparison.CurrentCultureIgnoreCase))
+                                        delivery = dv.Value.Substring(15, dv.Value.Length - 15);
+                                    DateTime tmp;
+                                    if (DateTime.TryParse(delivery, out tmp))
+                                    {
+                                        SqlCommand update = new SqlCommand(Utility.GetConfig("com2"));
+                                        update.CommandType = CommandType.Text;
+                                        update.Connection = conn;
+                                        SqlParameter pid = new SqlParameter();
+                                        pid.ParameterName = "@ID";
+                                        pid.SqlDbType = SqlDbType.Int;
+                                        pid.Direction = ParameterDirection.Input;
+                                        pid.Value = id;
 
+                                        SqlParameter deliveryValue = new SqlParameter();
+                                        deliveryValue.ParameterName = "@DeliveryTime";
+                                        deliveryValue.SqlDbType = SqlDbType.DateTime;
+                                        deliveryValue.Direction = ParameterDirection.Input;
+                                        deliveryValue.Value = delivery;
 
-                                    SqlParameter deliveryValue = new SqlParameter();
-                                    deliveryValue.ParameterName = "@DeliveryTime";
-                                    deliveryValue.SqlDbType = SqlDbType.DateTime;
-                                    deliveryValue.Direction = ParameterDirection.Input;
-                                    deliveryValue.Value = delivery;
-
-                                    update.Parameters.Add(pid);
-                                    update.Parameters.Add(deliveryValue);
-                                    update.ExecuteNonQuery();                                    
+                                        update.Parameters.Add(pid);
+                                        update.Parameters.Add(deliveryValue);
+                                        update.ExecuteNonQuery();
+                                    }
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine("No rows found.");
+                    }
+                    reader.Close();
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        conn.Close();
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("No rows found.");
-                }
-                reader.Close();
-                if(conn.State == ConnectionState.Open)
+            }catch(Exception e)
+            {
+                Utility.Log(LogTarget.File, String.Format("ID:{0}, Ex:{1}", id, e.Message));
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
                 {
                     conn.Close();
                 }
-                Console.Read();
             }
-
         }
     }
 }
