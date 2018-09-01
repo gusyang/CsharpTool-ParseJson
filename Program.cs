@@ -39,24 +39,32 @@ namespace consolJson
                                     DateTime tmp;
                                     if (DateTime.TryParse(delivery, out tmp))
                                     {
-                                        SqlCommand update = new SqlCommand(Utility.GetConfig("com2"));
-                                        update.CommandType = CommandType.Text;
-                                        update.Connection = conn;
-                                        SqlParameter pid = new SqlParameter();
-                                        pid.ParameterName = "@ID";
-                                        pid.SqlDbType = SqlDbType.Int;
-                                        pid.Direction = ParameterDirection.Input;
-                                        pid.Value = id;
+                                        try
+                                        {
+                                            SqlCommand update = new SqlCommand(Utility.GetConfig("com2"));
+                                            update.CommandType = CommandType.Text;
+                                            update.Connection = conn;
+                                            SqlParameter pid = new SqlParameter();
+                                            pid.ParameterName = "@ID";
+                                            pid.SqlDbType = SqlDbType.Int;
+                                            pid.Direction = ParameterDirection.Input;
+                                            pid.Value = id;
 
-                                        SqlParameter deliveryValue = new SqlParameter();
-                                        deliveryValue.ParameterName = "@DeliveryTime";
-                                        deliveryValue.SqlDbType = SqlDbType.DateTime;
-                                        deliveryValue.Direction = ParameterDirection.Input;
-                                        deliveryValue.Value = delivery;
+                                            SqlParameter deliveryValue = new SqlParameter();
+                                            deliveryValue.ParameterName = "@DeliveryTime";
+                                            deliveryValue.SqlDbType = SqlDbType.DateTime;
+                                            deliveryValue.Direction = ParameterDirection.Input;
+                                            deliveryValue.Value = delivery;
 
-                                        update.Parameters.Add(pid);
-                                        update.Parameters.Add(deliveryValue);
-                                        update.ExecuteNonQuery();
+                                            update.Parameters.Add(pid);
+                                            update.Parameters.Add(deliveryValue);
+                                            update.ExecuteNonQuery();
+                                        }catch(Exception ex)
+                                        {
+                                            //do not jump out even have exception data, continue to update next record;
+                                            Utility.Log(LogTarget.File, String.Format("ID:{0}, Ex:{1}", id, ex.Message));
+                                            continue;
+                                        }
                                     }
                                 }
                             }
